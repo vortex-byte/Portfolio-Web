@@ -1,0 +1,1 @@
+CREATE INDEX "visitor_logs_visitor_id_idx" ON "visitor_logs" USING btree ("visitor_id");
