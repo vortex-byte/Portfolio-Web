@@ -276,7 +276,18 @@
 
 								<!-- Actions -->
 								<TableCell class="text-right">
-									<div class="flex items-center justify-end">
+									<div class="flex items-center justify-end gap-1">
+										<Button
+											href="/work/{item.slug}"
+											target="_blank"
+											rel="noopener noreferrer"
+											variant="ghost"
+											size="sm"
+											class="font-bold text-muted-foreground hover:text-primary"
+										>
+											View
+										</Button>
+
 										<Button
 											href="/admin/work/{item.id}/edit"
 											variant="ghost"

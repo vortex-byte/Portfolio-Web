@@ -5,21 +5,22 @@
 	let {
 		value = $bindable(''),
 		name = 'imageUrl',
+		fileName = $bindable(''),
+		fileNameInputName = '',
 		category = 'work'
 	}: {
 		value?: string | null;
 		name?: string;
+		fileName?: string;
+		fileNameInputName?: string;
 		category?: string;
 	} = $props();
 
 	let uploading = $state(false);
+	let isDragging = $state(false);
 	let errorMsg = $state('');
 
-	async function handleFileSelect(e: Event) {
-		const input = e.target as HTMLInputElement;
-		if (!input.files || input.files.length === 0) return;
-
-		const file = input.files[0];
+	async function uploadSingleFile(file: File) {
 		uploading = true;
 		errorMsg = '';
 
@@ -39,6 +40,7 @@
 			}
 
 			value = data.url;
+			fileName = file.name;
 		} catch (err: unknown) {
 			const errorObj = err as Error;
 			errorMsg = errorObj.message || 'Image upload failed';
@@ -47,13 +49,45 @@
 		}
 	}
 
+	function handleFileSelect(e: Event) {
+		const input = e.target as HTMLInputElement;
+		if (!input.files || input.files.length === 0) return;
+		uploadSingleFile(input.files[0]);
+	}
+
+	function handleDragOver(e: DragEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		isDragging = true;
+	}
+
+	function handleDragLeave(e: DragEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		isDragging = false;
+	}
+
+	function handleDrop(e: DragEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		isDragging = false;
+
+		if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+			uploadSingleFile(e.dataTransfer.files[0]);
+		}
+	}
+
 	function clearImage() {
 		value = '';
+		fileName = '';
 	}
 </script>
 
 <div class="flex flex-col gap-3">
 	<input type="hidden" {name} value={value || ''} />
+	{#if fileNameInputName}
+		<input type="hidden" name={fileNameInputName} value={fileName || ''} />
+	{/if}
 
 	{#if value}
 		<div class="group relative aspect-video max-w-sm overflow-hidden rounded-lg border bg-card">
@@ -69,7 +103,12 @@
 		</div>
 	{:else}
 		<label
-			class="relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card/50 p-6 text-center transition-colors hover:border-foreground/50"
+			ondragover={handleDragOver}
+			ondragleave={handleDragLeave}
+			ondrop={handleDrop}
+			class="relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors {isDragging
+				? 'border-primary bg-primary/10'
+				: 'border-border bg-card/50 hover:border-foreground/50'}"
 		>
 			<input
 				type="file"
@@ -81,7 +120,7 @@
 			<Icon name="UploadCloud" size={32} class="text-muted-foreground" />
 			<div class="flex flex-col gap-1">
 				<span class="text-sm font-semibold">
-					{uploading ? 'Processing Image...' : 'Click or drop to upload'}
+					{uploading ? 'Processing Image...' : 'Click or drop to upload image'}
 				</span>
 				<span class="font-mono text-xs text-muted-foreground">PNG, JPG, WEBP up to 5MB</span>
 			</div>

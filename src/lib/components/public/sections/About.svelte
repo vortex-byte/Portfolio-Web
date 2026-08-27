@@ -33,7 +33,7 @@
 			<div class="lg:col-span-12">
 				<Card bg="bg-[#FFF9EC]">
 					<div
-						class="prose prose-lg prose-p:font-medium prose-p:text-neutral-900 prose-headings:font-black prose-headings:uppercase prose-a:text-[#FF3EA5] prose-a:font-bold max-w-none"
+						class="prose prose-lg prose-p:font-medium prose-p:text-neutral-900 prose-headings:font-black prose-headings:uppercase prose-a:text-[#FF3EA5] prose-a:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-4 [&_blockquote]:border-black [&_blockquote]:pl-4 [&_blockquote]:italic max-w-none"
 					>
 						{@html content}
 					</div>

@@ -22,37 +22,61 @@
 	let loading = $state(false);
 	let longDescription = $state('');
 	let coverImageUrl = $state('');
+	let coverFileName = $state('');
 	let techStack = $state<string[]>([]);
 	let confirmOpen = $state(false);
 	let deleteImageId = $state<string | null>(null);
 
-	let newGalleryItems = $state<
-		{ id: string; file: File | null; previewUrl: string; alt: string }[]
-	>([]);
+	let galleryFilesList = $state<File[]>([]);
+	let fileInputRef = $state<HTMLInputElement | null>(null);
+	let isDraggingGallery = $state(false);
 
-	function addNewGalleryInput() {
-		newGalleryItems = [
-			...newGalleryItems,
-			{ id: crypto.randomUUID(), file: null, previewUrl: '', alt: '' }
-		];
+	function addFilesToList(files: FileList | File[]) {
+		const selectedFiles = Array.from(files);
+		galleryFilesList = [...galleryFilesList, ...selectedFiles];
+		syncFileInput();
 	}
 
-	function removeNewGalleryInput(id: string) {
-		const item = newGalleryItems.find((i) => i.id === id);
-		if (item?.previewUrl) {
-			URL.revokeObjectURL(item.previewUrl);
-		}
-		newGalleryItems = newGalleryItems.filter((i) => i.id !== id);
-	}
-
-	function handleNewGalleryFileChange(id: string, e: Event) {
+	function handleBatchGallerySelect(e: Event) {
 		const input = e.target as HTMLInputElement;
 		if (!input.files || input.files.length === 0) return;
-		const file = input.files[0];
-		const previewUrl = URL.createObjectURL(file);
-		newGalleryItems = newGalleryItems.map((item) =>
-			item.id === id ? { ...item, file, previewUrl } : item
-		);
+		addFilesToList(input.files);
+	}
+
+	function handleGalleryDragOver(e: DragEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		isDraggingGallery = true;
+	}
+
+	function handleGalleryDragLeave(e: DragEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		isDraggingGallery = false;
+	}
+
+	function handleGalleryDrop(e: DragEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		isDraggingGallery = false;
+
+		if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+			addFilesToList(e.dataTransfer.files);
+		}
+	}
+
+	function removeGalleryFile(index: number) {
+		galleryFilesList = galleryFilesList.filter((_, i) => i !== index);
+		syncFileInput();
+	}
+
+	function syncFileInput() {
+		if (!fileInputRef) return;
+		const dt = new DataTransfer();
+		for (const file of galleryFilesList) {
+			dt.items.add(file);
+		}
+		fileInputRef.files = dt.files;
 	}
 
 	$effect(() => {
@@ -68,7 +92,8 @@
 			toast.success('Work updated successfully!');
 			confirmOpen = false;
 			deleteImageId = null;
-			newGalleryItems = [];
+			galleryFilesList = [];
+			syncFileInput();
 		}
 	});
 
@@ -143,128 +168,120 @@
 				<!-- Cover Image Upload -->
 				<div class="space-y-2">
 					<Label>Cover Thumbnail Image *</Label>
-					<FileUpload bind:value={coverImageUrl} name="coverImageUrl" category="work" />
-				</div>
-
-				<div class="space-y-2">
-					<Label for="coverImageAlt">Cover Image Alt Text</Label>
-					<Input id="coverImageAlt" name="coverImageAlt" value={work.coverImageAlt ?? ''} />
+					<FileUpload
+						bind:value={coverImageUrl}
+						bind:fileName={coverFileName}
+						name="coverImageUrl"
+						fileNameInputName="coverFileName"
+						category="work"
+					/>
 				</div>
 
 				<!-- Carousel Gallery Showcase Images -->
-				<Card>
-					<CardHeader class="flex flex-row items-center justify-between space-y-0">
-						<div>
-							<CardTitle class="text-lg font-bold">Gallery Images (Carousel Showcase)</CardTitle>
-							<p class="text-xs text-muted-foreground">
-								Manage screenshots shown in the project modal carousel.
-							</p>
-						</div>
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							onclick={addNewGalleryInput}
-							class="gap-1 text-xs"
-						>
-							<Icon name="Plus" size={14} />
-							<span>Add Image</span>
-						</Button>
-					</CardHeader>
-					<CardContent class="space-y-6">
-						<!-- Existing Uploaded Gallery Images -->
-						{#if images && images.length > 0}
-							<div class="space-y-2">
-								<Label class="text-xs font-semibold text-muted-foreground uppercase"
-									>Existing Gallery Screenshots</Label
-								>
-								<div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-									{#each images as img (img.id)}
+				 <div class="space-y-2">
+				 	<Label>Gallery Images</Label>
+
+					<!-- Existing Uploaded Gallery Images -->
+					{#if images && images.length > 0}
+						<div class="space-y-2">
+							<div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+								{#each images as img (img.id)}
+									<div
+										class="group relative aspect-video overflow-hidden rounded-lg border bg-card"
+									>
+										<img
+											src={img.imageUrl}
+											alt={img.imageAlt || 'Gallery screenshot'}
+											class="h-full w-full object-cover"
+										/>
 										<div
-											class="group relative aspect-video overflow-hidden rounded-lg border bg-card"
+											class="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100"
 										>
-											<img
-												src={img.imageUrl}
-												alt={img.imageAlt || 'Gallery screenshot'}
-												class="h-full w-full object-cover"
-											/>
-											<div
-												class="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100"
+											<Button
+												type="button"
+												variant="destructive"
+												size="sm"
+												class="gap-1 text-xs"
+												onclick={() => promptDeleteImage(img.id)}
 											>
-												<Button
-													type="button"
-													variant="destructive"
-													size="sm"
-													class="gap-1 text-xs"
-													onclick={() => promptDeleteImage(img.id)}
-												>
-													<Icon name="Trash2" size={14} />
-													<span>Delete</span>
-												</Button>
+												<Icon name="Trash2" size={14} />
+												<span>Delete</span>
+											</Button>
+										</div>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
+					<!-- Batch Upload Input -->
+					<div class="space-y-3">
+						<!-- Hidden actual file input bound to form -->
+						<input
+							bind:this={fileInputRef}
+							type="file"
+							name="galleryFiles"
+							multiple
+							accept="image/jpeg,image/png,image/webp"
+							class="hidden"
+						/>
+
+							<!-- Dropzone / Selection Box -->
+							<label
+								ondragover={handleGalleryDragOver}
+								ondragleave={handleGalleryDragLeave}
+								ondrop={handleGalleryDrop}
+								class="relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors {isDraggingGallery
+									? 'border-primary bg-primary/10'
+									: 'border-border bg-card/50 hover:border-foreground/50'}"
+							>
+								<input
+									type="file"
+									multiple
+									accept="image/jpeg,image/png,image/webp"
+									onchange={handleBatchGallerySelect}
+									class="sr-only"
+								/>
+								<Icon name="UploadCloud" size={32} class="text-muted-foreground" />
+								<div class="flex flex-col gap-1">
+									<span class="text-sm font-semibold">Click or drop to batch upload images</span>
+									<span class="font-mono text-xs text-muted-foreground">
+										PNG, JPG, WEBP up to 5MB each
+									</span>
+								</div>
+							</label>
+
+						<!-- Selected New Images List -->
+						{#if galleryFilesList.length > 0}
+							<div class="space-y-2 pt-2">
+								<Label class="text-xs font-semibold text-muted-foreground">
+									New Images to Upload ({galleryFilesList.length})
+								</Label>
+								<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									{#each galleryFilesList as file, i (file.name + i)}
+										<div
+											class="flex items-center justify-between gap-2 rounded-md border bg-muted/40 p-2.5 text-sm"
+										>
+											<div class="flex items-center gap-2 overflow-hidden">
+												<Icon name="Image" size={16} class="shrink-0 text-muted-foreground" />
+												<span class="truncate font-medium">{file.name}</span>
 											</div>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												onclick={() => removeGalleryFile(i)}
+												class="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+											>
+												<Icon name="X" size={14} />
+											</Button>
 										</div>
 									{/each}
 								</div>
 							</div>
 						{/if}
-
-						<!-- New Pending Gallery Uploads -->
-						{#if newGalleryItems.length > 0}
-							<div class="space-y-3">
-								<Label class="text-xs font-semibold text-muted-foreground uppercase"
-									>New Gallery Screenshots to Upload</Label
-								>
-								{#each newGalleryItems as item (item.id)}
-									<div
-										class="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center"
-									>
-										{#if item.previewUrl}
-											<div class="h-16 w-24 shrink-0 overflow-hidden rounded border bg-card">
-												<img
-													src={item.previewUrl}
-													alt="Preview"
-													class="h-full w-full object-cover"
-												/>
-											</div>
-										{/if}
-										<div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
-											<Input
-												type="file"
-												name="galleryFiles"
-												accept="image/jpeg,image/png,image/webp"
-												onchange={(e) => handleNewGalleryFileChange(item.id, e)}
-												required
-												class="text-sm"
-											/>
-											<Input
-												type="text"
-												name="galleryAlts"
-												bind:value={item.alt}
-												placeholder="Alt text (e.g. Dashboard preview)"
-												class="text-sm"
-											/>
-										</div>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											onclick={() => removeNewGalleryInput(item.id)}
-											class="shrink-0 text-muted-foreground hover:text-destructive"
-										>
-											<Icon name="Trash2" size={16} />
-										</Button>
-									</div>
-								{/each}
-							</div>
-						{/if}
-
-						{#if (!images || images.length === 0) && newGalleryItems.length === 0}
-							<p class="text-sm text-muted-foreground italic">
-								No gallery carousel images added yet. Click "Add Image" to upload screenshots.
-							</p>
-						{/if}
-					</CardContent>
-				</Card>
+					</div>
+				 </div>
 
 				<!-- Tech Stack Tags -->
 				<div class="space-y-2">

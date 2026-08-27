@@ -18,7 +18,7 @@
 		{ label: 'About', href: '/#about' },
 		{ label: 'Services', href: '/#services' },
 		{ label: 'Skills', href: '/#skills' },
-		{ label: 'Work', href: '/work' }
+		{ label: 'Work', href: '/#work' }
 	];
 </script>
 

@@ -75,7 +75,7 @@
 						{#if work.techStack && work.techStack.length > 0}
 							<div class="flex flex-wrap gap-1.5 border-t-2 border-neutral-200 pt-2">
 								{#each work.techStack as tag (tag)}
-									<Badge variant="default" class="text-[10px]">{tag}</Badge>
+									<Badge variant="default">{tag}</Badge>
 								{/each}
 							</div>
 						{/if}

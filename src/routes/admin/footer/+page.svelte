@@ -32,10 +32,6 @@
 		];
 	});
 
-	let newPlatform = $state('');
-	let newUrl = $state('');
-	let newIcon = $state('Github');
-
 	$effect(() => {
 		if (form?.success) {
 			toast.success('Footer settings updated successfully!');
@@ -45,11 +41,7 @@
 	});
 
 	function addLink() {
-		if (newPlatform.trim() && newUrl.trim()) {
-			links = [...links, { platform: newPlatform.trim(), url: newUrl.trim(), icon: newIcon }];
-			newPlatform = '';
-			newUrl = '';
-		}
+		links = [...links, { platform: '', url: '', icon: 'Link' }];
 	}
 
 	function removeLink(index: number) {
@@ -62,12 +54,14 @@
 <AdminTitle title="Manage Footer" />
 
 <div class="max-w-4xl space-y-6">
-	<div>
-		<h1 class="text-3xl font-black tracking-tight">Footer Settings</h1>
-		<p class="text-sm text-muted-foreground">
-			Manage the site copyright text and social media links displayed at the bottom of all public
-			pages.
-		</p>
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="text-3xl font-black tracking-tight">Footer Settings</h1>
+			<p class="text-sm text-muted-foreground">
+				Manage the site copyright text and social media links displayed at the bottom of all public
+				pages.
+			</p>
+		</div>
 	</div>
 
 	<Card>
@@ -101,57 +95,63 @@
 				</div>
 
 				<!-- Social Links List -->
-				<div class="space-y-4 border-t pt-2">
-					<Label>Social Media Links</Label>
+				<div class="space-y-4 border-t pt-4">
+					<div class="flex items-center justify-between">
+						<Label>Social Media Links</Label>
+						<Button type="button" variant="outline" size="sm" onclick={addLink} class="gap-1.5 text-xs">
+							<Icon name="Plus" size={14} />
+							<span>Add Social Link</span>
+						</Button>
+					</div>
 
 					{#if links.length > 0}
-						<div class="space-y-2">
+						<div class="space-y-3">
 							{#each links as link, idx (idx)}
 								<div
-									class="flex items-center justify-between gap-3 rounded-lg border bg-muted/40 p-3 text-sm"
+									class="flex flex-col gap-3 rounded-lg border bg-card p-3 shadow-xs sm:flex-row sm:items-center"
 								>
-									<div class="flex items-center gap-3">
-										<div class="flex h-8 w-8 items-center justify-center rounded border bg-card">
-											<Icon name={link.icon} size={16} />
-										</div>
-										<div class="flex flex-col">
-											<span class="font-bold">{link.platform}</span>
-											<span class="font-mono text-xs text-muted-foreground">{link.url}</span>
-										</div>
+									<!-- Icon Picker Direct Inline -->
+									<div class="w-full sm:w-48 shrink-0">
+										<IconPicker bind:value={link.icon} />
 									</div>
+
+									<!-- Inline Editable Platform Input -->
+									<div class="w-full sm:w-44 shrink-0">
+										<Input
+											placeholder="Platform (e.g. GitHub)"
+											bind:value={link.platform}
+											class="text-sm font-semibold"
+										/>
+									</div>
+
+									<!-- Inline Editable URL Input -->
+									<div class="flex-1">
+										<Input
+											placeholder="URL (https://...)"
+											bind:value={link.url}
+											class="font-mono text-sm"
+										/>
+									</div>
+
+									<!-- Delete Button -->
 									<Button
 										type="button"
 										variant="ghost"
 										size="icon"
 										onclick={() => removeLink(idx)}
-										class="text-muted-foreground hover:text-destructive"
+										class="shrink-0 text-muted-foreground hover:text-destructive"
+										title="Delete link"
 									>
 										<Icon name="Trash2" size={16} />
 									</Button>
 								</div>
 							{/each}
 						</div>
+					{:else}
+						<p class="text-sm italic text-muted-foreground">
+							No social media links added. Click "Add Social Link" above to create one.
+						</p>
 					{/if}
-
-					<!-- Add New Social Link Row -->
-					<div class="space-y-3 rounded-lg border bg-muted/20 p-4">
-						<span class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-							>Add Social Link</span
-						>
-						<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-							<Input
-								placeholder="Platform (e.g. GitHub)"
-								bind:value={newPlatform}
-								class="text-sm"
-							/>
-							<Input placeholder="URL (https://...)" bind:value={newUrl} class="text-sm" />
-							<IconPicker bind:value={newIcon} />
-						</div>
-						<Button type="button" variant="secondary" onclick={addLink} class="gap-1.5 text-xs">
-							<Icon name="Plus" size={14} />
-							<span>Add Link</span>
-						</Button>
-					</div>
 				</div>
 
 				<!-- Submit Button -->

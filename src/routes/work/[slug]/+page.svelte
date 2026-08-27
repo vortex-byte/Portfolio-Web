@@ -79,7 +79,7 @@
 			{#if work.repoUrl}
 				<Button href={work.repoUrl} target="_blank" rel="noopener noreferrer" variant="outline">
 					<Icon name="Github" size={20} />
-					<span>Source Code Repository</span>
+					<span>Repository</span>
 				</Button>
 			{/if}
 		</div>
@@ -88,7 +88,7 @@
 	<!-- Long Description (Sanitized HTML) -->
 	<Card bg="bg-white" class="p-8">
 		<div
-			class="prose prose-lg prose-p:font-medium prose-p:text-neutral-900 prose-headings:font-black prose-headings:uppercase prose-a:text-[#FF3EA5] prose-a:font-bold max-w-none"
+			class="prose prose-lg prose-p:font-medium prose-p:text-neutral-900 prose-headings:font-black prose-headings:uppercase prose-a:text-[#FF3EA5] prose-a:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-4 [&_blockquote]:border-black [&_blockquote]:pl-4 [&_blockquote]:italic max-w-none"
 		>
 			{@html work.longDescription}
 		</div>
