@@ -1,4 +1,4 @@
-import sanitize from 'sanitize-html';
+import xss, { type IFilterXSSOptions } from 'xss';
 
 const ALLOWED_TAGS = [
 	'p',
@@ -34,18 +34,28 @@ const ALLOWED_TAGS = [
 
 const ALLOWED_ATTR = ['href', 'src', 'alt', 'title', 'class', 'target', 'rel'];
 
+const xssHtmlOptions: IFilterXSSOptions = {
+	whiteList: ALLOWED_TAGS.reduce(
+		(acc, tag) => {
+			acc[tag] = ALLOWED_ATTR;
+			return acc;
+		},
+		{} as Record<string, string[]>
+	),
+	stripIgnoreTag: true,
+	stripIgnoreTagBody: ['script', 'style']
+};
+
+const xssPlainOptions: IFilterXSSOptions = {
+	whiteList: {},
+	stripIgnoreTag: true,
+	stripIgnoreTagBody: ['script', 'style']
+};
+
 export function sanitizeHtml(dirty: string): string {
-	return sanitize(dirty, {
-		allowedTags: ALLOWED_TAGS,
-		allowedAttributes: {
-			'*': ALLOWED_ATTR
-		}
-	});
+	return xss(dirty, xssHtmlOptions);
 }
 
 export function sanitizePlain(text: string): string {
-	return sanitize(text, {
-		allowedTags: [],
-		allowedAttributes: {}
-	});
+	return xss(text, xssPlainOptions);
 }
