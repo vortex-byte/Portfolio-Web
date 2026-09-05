@@ -38,7 +38,7 @@ export const authService = new AuthService(
 	argon2PasswordHasher
 );
 
-export const contentService = new ContentService(contentRepository, cacheService);
+export const contentService = new ContentService(contentRepository, cacheService, storageProvider);
 
 export const workService = new WorkService(workRepository, cacheService, storageProvider);
 

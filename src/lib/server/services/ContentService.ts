@@ -1,5 +1,6 @@
 import type { IContentRepository } from '$lib/server/repositories/IContentRepository';
 import type { ICacheService } from '$lib/server/cache/ICacheService';
+import type { IStorageProvider } from '$lib/server/storage/IStorageProvider';
 import type {
 	HeroSectionEntity,
 	AboutSectionEntity,
@@ -22,7 +23,8 @@ import type {
 export class ContentService {
 	constructor(
 		private contentRepo: IContentRepository,
-		private cacheService: ICacheService
+		private cacheService: ICacheService,
+		private storageProvider: IStorageProvider
 	) {}
 
 	async getHero(): Promise<HeroSectionEntity | null> {
@@ -32,7 +34,13 @@ export class ContentService {
 	}
 
 	async saveHero(input: UpsertHeroInput): Promise<HeroSectionEntity> {
+		const existing = await this.contentRepo.getHero();
 		const res = await this.contentRepo.upsertHero(input);
+
+		if (existing && existing.photoPath && existing.photoPath !== input.photoPath) {
+			await this.storageProvider.deleteImage(existing.photoPath);
+		}
+
 		await this.cacheService.delete('content:hero');
 		return res;
 	}
@@ -44,7 +52,13 @@ export class ContentService {
 	}
 
 	async saveAbout(input: UpsertAboutInput): Promise<AboutSectionEntity> {
+		const existing = await this.contentRepo.getAbout();
 		const res = await this.contentRepo.upsertAbout(input);
+
+		if (existing && existing.imagePath && existing.imagePath !== input.imagePath) {
+			await this.storageProvider.deleteImage(existing.imagePath);
+		}
+
 		await this.cacheService.delete('content:about');
 		return res;
 	}
