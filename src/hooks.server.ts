@@ -6,9 +6,6 @@ import { checkRateLimit } from '$lib/server/security/rateLimiter';
 import { parseDuration, generateUuid } from '$lib/server/utils';
 import { getAccessToken, getRefreshToken } from '$lib/server/security/cookies';
 import { authService } from '$lib/server/container';
-import { initEmailWorker } from '$lib/server/queue/emailWorker';
-
-initEmailWorker();
 
 const SECURITY_HEADERS: Record<string, string> = {
 	'X-Frame-Options': 'DENY',
@@ -20,11 +17,12 @@ const SECURITY_HEADERS: Record<string, string> = {
 function buildCsp(isDev: boolean): string {
 	const directives = [
 		`default-src 'self'`,
-		`script-src 'self'${isDev ? " 'unsafe-inline'" : ''}`,
+		`script-src 'self'${isDev ? " 'unsafe-inline'" : ''} https://challenges.cloudflare.com`,
 		`style-src 'self' 'unsafe-inline'`,
-		`img-src 'self' data: blob:`,
+		`img-src 'self' data: blob: https:`,
 		`font-src 'self' data:`,
-		`connect-src 'self'`,
+		`connect-src 'self' https://challenges.cloudflare.com`,
+		`frame-src 'self' https://challenges.cloudflare.com`,
 		`frame-ancestors 'none'`,
 		`base-uri 'self'`,
 		`form-action 'self'`

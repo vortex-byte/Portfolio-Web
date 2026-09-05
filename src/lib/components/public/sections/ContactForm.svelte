@@ -6,6 +6,7 @@
 	import Alert from '../Alert.svelte';
 	import Icon from '../Icon.svelte';
 	import { enhance } from '$app/forms';
+	import { env } from '$env/dynamic/public';
 
 	let {
 		eyebrow = "Let's Talk",
@@ -37,6 +38,12 @@
 		}
 	});
 </script>
+
+<svelte:head>
+	{#if env.PUBLIC_TURNSTILE_SITE_KEY}
+		<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+	{/if}
+</svelte:head>
 
 <section id="contact" class="border-b-[4px] border-black bg-white px-4 py-20 sm:px-6 lg:px-8">
 	<div class="mx-auto grid max-w-7xl grid-cols-1 items-start gap-12 lg:grid-cols-12">
@@ -95,6 +102,9 @@
 							return async ({ update }) => {
 								loading = false;
 								await update();
+								if (typeof window !== 'undefined' && (window as any).turnstile) {
+									(window as any).turnstile.reset();
+								}
 							};
 						}}
 						class="flex flex-col gap-6"
@@ -146,6 +156,10 @@
 								error={formState?.errors?.message}
 							/>
 						</div>
+
+						{#if env.PUBLIC_TURNSTILE_SITE_KEY}
+							<div class="cf-turnstile" data-sitekey={env.PUBLIC_TURNSTILE_SITE_KEY} data-theme="light"></div>
+						{/if}
 
 						<Button
 							type="submit"

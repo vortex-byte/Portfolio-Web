@@ -48,7 +48,16 @@ const envSchema = z.object({
 	SMTP_PASS: z.string().optional(),
 	SMTP_FROM_NAME: z.string().optional(),
 	SMTP_FROM_EMAIL: z.string().email().optional().or(z.literal('')),
-	TARGET_EMAIL: z.string().email().optional()
+	TARGET_EMAIL: z.string().email().optional(),
+
+	PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
+	TURNSTILE_SECRET_KEY: z.string().optional(),
+
+	R2_ACCOUNT_ID: z.string().optional(),
+	R2_ACCESS_KEY_ID: z.string().optional(),
+	R2_SECRET_ACCESS_KEY: z.string().optional(),
+	R2_BUCKET_NAME: z.string().optional(),
+	R2_PUBLIC_URL: z.string().optional()
 });
 
 export function getEnv() {

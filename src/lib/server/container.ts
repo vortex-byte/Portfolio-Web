@@ -8,15 +8,22 @@ import { smtpRepository } from '$lib/server/repositories/SmtpRepository';
 
 import { cacheService } from '$lib/server/cache/CacheService';
 import { localStorageProvider } from '$lib/server/storage/LocalStorageProvider';
+import { R2StorageProvider } from '$lib/server/storage/R2StorageProvider';
+import { env } from '$lib/server/env';
 import { argon2PasswordHasher } from '$lib/server/security/Argon2PasswordHasher';
 import { nodemailerProvider } from '$lib/server/mailer/NodemailerProvider';
-import { emailQueue } from '$lib/server/queue/BullMQEmailQueue';
+import { directEmailQueue } from '$lib/server/queue/DirectEmailQueue';
 
 import { AuthService } from '$lib/server/services/AuthService';
 import { ContentService } from '$lib/server/services/ContentService';
 import { WorkService } from '$lib/server/services/WorkService';
 import { AnalyticsService } from '$lib/server/services/AnalyticsService';
 import { ContactService } from '$lib/server/services/ContactService';
+
+export const storageProvider =
+	env.R2_ACCOUNT_ID && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_BUCKET_NAME
+		? new R2StorageProvider()
+		: localStorageProvider;
 
 export {
 	adminUserRepository,
@@ -28,7 +35,7 @@ export {
 	smtpRepository
 };
 
-export { cacheService, localStorageProvider, argon2PasswordHasher, nodemailerProvider, emailQueue };
+export { cacheService, localStorageProvider, argon2PasswordHasher, nodemailerProvider, directEmailQueue as emailQueue };
 
 export const authService = new AuthService(
 	adminUserRepository,
@@ -38,8 +45,8 @@ export const authService = new AuthService(
 
 export const contentService = new ContentService(contentRepository, cacheService);
 
-export const workService = new WorkService(workRepository, cacheService, localStorageProvider);
+export const workService = new WorkService(workRepository, cacheService, storageProvider);
 
 export const analyticsService = new AnalyticsService(analyticsRepository);
 
-export const contactService = new ContactService(contactRepository, emailQueue);
+export const contactService = new ContactService(contactRepository, directEmailQueue);

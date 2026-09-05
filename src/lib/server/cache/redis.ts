@@ -7,14 +7,16 @@ export const redis =
 	globalForRedis.redis ??
 	new Redis(env.REDIS_URL, {
 		maxRetriesPerRequest: 3,
-		enableReadyCheck: true
+		enableReadyCheck: true,
+		family: 4
 	});
 
 export const queueRedis =
 	globalForRedis.queueRedis ??
 	new Redis(env.REDIS_URL, {
 		maxRetriesPerRequest: null,
-		enableReadyCheck: false
+		enableReadyCheck: false,
+		family: 4
 	});
 
 if (env.NODE_ENV !== 'production') {
