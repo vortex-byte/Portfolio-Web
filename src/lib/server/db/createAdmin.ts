@@ -17,42 +17,62 @@ async function main() {
 		process.exit(1);
 	}
 
-	const rl = createInterface({ input, output });
-
 	console.log('\n=== Create Admin User ===\n');
 
+	let name = process.env.ADMIN_NAME?.trim() || '';
+	let email = process.env.ADMIN_EMAIL?.trim().toLowerCase() || '';
+	let password = process.env.ADMIN_PASSWORD || '';
+
+	if (!email || !password) {
+		const rl = createInterface({ input, output });
+		try {
+			while (!name) {
+				const rawName = await rl.question('Admin Name (default: Admin): ');
+				name = rawName.trim() || 'Admin';
+			}
+
+			while (!email) {
+				const rawEmail = await rl.question('Admin Email: ');
+				const parseRes = emailSchema.safeParse(rawEmail);
+				if (parseRes.success) {
+					email = parseRes.data.toLowerCase();
+				} else {
+					console.log(`  ❌ ${parseRes.error.issues[0]?.message}`);
+				}
+			}
+
+			while (!password) {
+				const rawPassword = await rl.question('Admin Password (min 8 chars): ');
+				const parseRes = passwordSchema.safeParse(rawPassword);
+				if (parseRes.success) {
+					password = parseRes.data;
+				} else {
+					console.log(`  ❌ ${parseRes.error.issues[0]?.message}`);
+				}
+			}
+
+			rl.close();
+		} catch (err) {
+			rl.close();
+			throw err;
+		}
+	} else {
+		if (!name) name = 'Admin';
+		const emailRes = emailSchema.safeParse(email);
+		if (!emailRes.success) {
+			console.error(`❌ Invalid ADMIN_EMAIL: ${emailRes.error.issues[0]?.message}`);
+			process.exit(1);
+		}
+		const passRes = passwordSchema.safeParse(password);
+		if (!passRes.success) {
+			console.error(`❌ Invalid ADMIN_PASSWORD: ${passRes.error.issues[0]?.message}`);
+			process.exit(1);
+		}
+		console.log('Using non-interactive environment variables (ADMIN_NAME, ADMIN_EMAIL)...');
+	}
+
 	try {
-		let name = '';
-		while (!name) {
-			const rawName = await rl.question('Admin Name (default: Admin): ');
-			name = rawName.trim() || 'Admin';
-		}
-
-		let email = '';
-		while (!email) {
-			const rawEmail = await rl.question('Admin Email: ');
-			const parseRes = emailSchema.safeParse(rawEmail);
-			if (parseRes.success) {
-				email = parseRes.data.toLowerCase();
-			} else {
-				console.log(`  ❌ ${parseRes.error.issues[0]?.message}`);
-			}
-		}
-
-		let password = '';
-		while (!password) {
-			const rawPassword = await rl.question('Admin Password (min 8 chars): ');
-			const parseRes = passwordSchema.safeParse(rawPassword);
-			if (parseRes.success) {
-				password = parseRes.data;
-			} else {
-				console.log(`  ❌ ${parseRes.error.issues[0]?.message}`);
-			}
-		}
-
-		rl.close();
-
-		console.log('\nHashing password and saving user to database...');
+		console.log('Hashing password and saving user to database...');
 
 		const client = postgres(databaseUrl);
 		const db = drizzle(client, { schema });
@@ -84,7 +104,6 @@ async function main() {
 		console.log(`   Name:  ${user.name}`);
 		console.log(`   Email: ${user.email}\n`);
 	} catch (err: unknown) {
-		rl.close();
 		console.error('\n❌ Failed to create admin user:', err);
 		process.exit(1);
 	}

@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import { env } from '$lib/server/env';
 
-const globalForRedis = globalThis as unknown as { redis?: Redis; queueRedis?: Redis };
+const globalForRedis = globalThis as unknown as { redis?: Redis };
 
 export const redis =
 	globalForRedis.redis ??
@@ -11,15 +11,6 @@ export const redis =
 		family: 4
 	});
 
-export const queueRedis =
-	globalForRedis.queueRedis ??
-	new Redis(env.REDIS_URL, {
-		maxRetriesPerRequest: null,
-		enableReadyCheck: false,
-		family: 4
-	});
-
 if (env.NODE_ENV !== 'production') {
 	globalForRedis.redis = redis;
-	globalForRedis.queueRedis = queueRedis;
 }

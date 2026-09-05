@@ -6,7 +6,7 @@ A modern, high-performance personal web portfolio website and administration das
 
 This project is a full-stack personal portfolio application designed around Clean Architecture principles. It features a public-facing website styled with a Neobrutalism design system and a private management dashboard powered by shadcn-svelte.
 
-The public frontend features fast server-side rendering (SSR), dynamic content section headers, visibility controls, image upload handling, and Redis cache-aside support. The administrative backend provides secured CRUD operations, system analytics, interactive CLI user creation, contact message management, and profile administration.
+The public frontend features fast server-side rendering (SSR), dynamic content section headers, visibility controls, Cloudflare R2 / local image upload handling, Cloudflare Turnstile bot protection, and Redis cache-aside support. The administrative backend provides secured CRUD operations, system analytics, interactive or non-interactive administrator creation, contact message management, and profile administration.
 
 ## Features
 
@@ -14,33 +14,40 @@ The public frontend features fast server-side rendering (SSR), dynamic content s
 - **Dynamic Section Headers**: Centralized section header management (eyebrow, title, description) editable via the admin dashboard.
 - **Section Visibility Controls**: Global toggle switches to hide or display individual homepage sections dynamically.
 - **Hero Photo Toggle**: Flexible hero section supporting full-width text layouts or split photo composition.
+- **Cloudflare Turnstile Protection**: Non-interactive anti-bot challenge on the public contact form.
+- **Cloudflare R2 Object Storage**: Serverless-compatible, zero-egress cloud storage for image uploads with automatic WebP conversion and thumbnail generation using `@aws-sdk/client-s3`. Local disk storage acts as a fallback for offline development.
+- **Netlify Serverless Ready**: Adapter for Netlify Functions (`@sveltejs/adapter-netlify`) with optimized PostgreSQL connection pooling and direct email delivery.
+- **Automated Database Migrations**: GitHub Actions workflow (`.github/workflows/migrate.yml`) for automated database migration execution on managed PostgreSQL databases (Neon, Supabase, Railway).
 - **Admin Dashboard**: Full content management system built with shadcn-svelte for managing profile details, services, skills, projects, and incoming contact messages.
 - **Analytics & Metrics**: Visitor metrics, response rate indicators, and interactive status charts.
-- **Interactive CLI Admin Creation**: Secure CLI command (`npm run create-admin`) for interactive administrator account creation.
-- **Security & Authentication**: JWT authentication with httpOnly, Secure, SameSite=Strict cookies, argon2 password hashing, and Redis rate limiting on contact endpoints and authentication routes.
-- **Background Mail Processing**: BullMQ and Redis integration for asynchronous email notification dispatch via Nodemailer.
+- **CLI & Non-Interactive Admin Creation**: CLI command (`npm run create-admin`) supporting interactive prompts or environment variables (`ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`).
+- **Security & Authentication**: JWT authentication with httpOnly, Secure, SameSite=Strict cookies, argon2 password hashing, strict Content Security Policy (CSP), and Redis rate limiting on contact endpoints and authentication routes.
+- **Direct Mail Processing**: Serverless-safe direct email notification dispatch via Nodemailer.
 - **Caching Layer**: Redis cache-aside pattern for fast public site loads and instant cache invalidation upon admin content mutations.
 
 ## Tech Stack
 
-- **Framework**: SvelteKit (Node adapter)
+- **Framework**: SvelteKit (`@sveltejs/adapter-netlify`)
 - **Language**: TypeScript
-- **Database**: PostgreSQL
+- **Database**: PostgreSQL (Managed: Neon / Supabase / Railway)
 - **ORM**: Drizzle ORM & Drizzle Kit
-- **Caching & Queue**: Redis & BullMQ
+- **Cloud Storage**: Cloudflare R2 (`@aws-sdk/client-s3`) & Sharp
+- **Bot Protection**: Cloudflare Turnstile
+- **Caching**: Managed Redis (Upstash / Redis Cloud) via `ioredis`
 - **Authentication**: JWT (`jose`) & `argon2`
 - **Styling**: Tailwind CSS v4, `shadcn-svelte`, `bits-ui`
-- **Asset Processing**: Sharp & TipTap Rich Text Editor
 - **Icons**: Lucide
 
 ## Prerequisites
 
-Ensure the following tools are installed on your host machine before continuing:
+Ensure the following tools are available:
 
-- Node.js (v20.x or higher recommended)
+- Node.js (v24.x recommended)
 - npm (v10.x or higher)
-- PostgreSQL server (v14.x or higher)
-- Redis server (v6.x or higher)
+- PostgreSQL database (Managed service like Neon / Supabase / Railway or local PostgreSQL server)
+- Redis server or Managed Redis (Upstash / Redis Cloud)
+- Cloudflare R2 bucket & API token (for production image uploads)
+- Cloudflare Turnstile Site Key & Secret (for bot protection)
 - Git
 
 ## Installation
@@ -58,57 +65,73 @@ Ensure the following tools are installed on your host machine before continuing:
    npm install
    ```
 
-3. Ensure PostgreSQL and Redis services are running on your system.
-
-4. Create the target PostgreSQL database:
-   ```sql
-   CREATE DATABASE portfolio_db;
-   ```
-
 ## Environment Variables
 
-Create a `.env` file in the project root directory by copying `.env.example` or creating a new file with the following variables:
+Create a `.env` file in the project root directory by copying `.env.example`:
 
 ```env
 # Node Environment & Debugging
 NODE_ENV=development
 PUBLIC_DEBUG_MODE=true
+APP_PORT=3000
+APP_BASE_URL=http://localhost:3000
 
 # Site Configuration
-PUBLIC_SITE_TITLE="Web Developer Portfolio"
+PUBLIC_SITE_TITLE="My Portfolio"
 PUBLIC_SITE_DESCRIPTION="Full-Stack Web Developer Portfolio"
 
-# Database Configuration
-DATABASE_URL="postgres://postgres:postgres@localhost:5432/portfolio_db"
+# Database Configuration (Managed PostgreSQL or Local)
+DATABASE_URL="postgres://postgres:root@localhost:5432/portfolio"
 
-# Redis Configuration
+# Redis Configuration (Managed Redis or Local)
 REDIS_URL="redis://localhost:6379"
 
-# JWT Authentication Secrets
-JWT_SECRET="your-super-secret-jwt-key-at-least-32-chars-long"
+# JWT Authentication Secrets (min 32 chars each)
+JWT_ACCESS_SECRET="change_me_to_a_random_64_char_string_min_32_chars"
+JWT_REFRESH_SECRET="change_me_too_to_a_random_64_char_string_min_32"
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Security & Rate Limiting
+RATE_LIMIT_CONTACT_MAX=5
+RATE_LIMIT_CONTACT_WINDOW=10m
+RATE_LIMIT_LOGIN_MAX=5
+LOGIN_LOCKOUT_WINDOW=15m
+LOGIN_LOCKOUT_DURATION=15m
+
+# File Storage (Local fallback)
+UPLOAD_DIR="./uploads"
+MAX_UPLOAD_SIZE_MB=5
 
 # Email / SMTP Configuration
 SMTP_HOST="smtp.example.com"
 SMTP_PORT=587
 SMTP_USER="user@example.com"
 SMTP_PASS="password"
-SMTP_FROM="noreply@example.com"
-ADMIN_NOTIFICATION_EMAIL="admin@example.com"
+SMTP_FROM_NAME="Portfolio Admin"
+SMTP_FROM_EMAIL="noreply@example.com"
+TARGET_EMAIL="owner@example.com"
 
-# Upload Configuration
-UPLOAD_DIR="./static/uploads"
-MAX_FILE_SIZE_MB=5
+# Cloudflare Turnstile (Bot Protection)
+PUBLIC_TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
+
+# Cloudflare R2 Storage (Production Uploads)
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=
+R2_PUBLIC_URL=
 ```
 
 ## Usage
 
 ### 1. Database Migration & Seeding
 
-Generate and execute database migrations:
+Run pending SQL migrations against your database:
 
 ```bash
-npm run db:generate
-npm run db:push
+npm run db:migrate
 ```
 
 Seed initial database content (section headers, default about data, skills, services):
@@ -119,13 +142,21 @@ npm run seed
 
 ### 2. Administrator Account Creation
 
-Create an initial administrator account via the interactive CLI command:
+Create an administrator account interactively:
 
 ```bash
 npm run create-admin
 ```
 
-Follow the prompt to enter the administrator name, email, and password.
+Or non-interactively via environment variables:
+
+```bash
+DATABASE_URL="your-production-db-url" \
+ADMIN_NAME="Admin" \
+ADMIN_EMAIL="admin@example.com" \
+ADMIN_PASSWORD="YourSecurePassword123!" \
+npm run create-admin
+```
 
 ### 3. Running the Development Server
 
@@ -137,37 +168,78 @@ npm run dev
 
 Open `http://localhost:5173` in your browser to view the public website, or access `/admin/login` to log into the administrative control panel.
 
+## Deploying to Netlify (Serverless)
+
+### 1. Database & GitHub Actions Setup
+
+1. In your GitHub repository settings under **Settings > Secrets and variables > Actions**, add a new repository secret named `DATABASE_URL` with your managed PostgreSQL connection string (Neon, Supabase, or Railway).
+2. The GitHub Action workflow (`.github/workflows/migrate.yml`) will automatically execute pending database migrations whenever schema changes are pushed to `main`.
+3. After the initial migration finishes, create your production admin user from your terminal:
+   ```bash
+   DATABASE_URL="postgres://user:password@your-managed-db-host:5432/dbname" npm run create-admin
+   ```
+
+### 2. Netlify Environment Configuration
+
+In the **Netlify Dashboard** under **Site configuration > Environment variables**, configure the following variables:
+
+| Variable | Description / Example |
+| :--- | :--- |
+| `NODE_ENV` | `production` |
+| `DATABASE_URL` | Managed PostgreSQL URL (`postgres://...`) |
+| `REDIS_URL` | Managed Redis TLS URL (`rediss://...`) |
+| `JWT_ACCESS_SECRET` | Min 32-char random string |
+| `JWT_REFRESH_SECRET` | Min 32-char random string |
+| `APP_BASE_URL` | Your Netlify site URL (e.g. `https://your-site.netlify.app`) |
+| `PUBLIC_TURNSTILE_SITE_KEY` | Turnstile Site Key |
+| `TURNSTILE_SECRET_KEY` | Turnstile Secret Key |
+| `R2_ACCOUNT_ID` | Cloudflare Account ID |
+| `R2_ACCESS_KEY_ID` | Cloudflare R2 Access Key ID |
+| `R2_SECRET_ACCESS_KEY` | Cloudflare R2 Secret Access Key |
+| `R2_BUCKET_NAME` | Cloudflare R2 Bucket Name |
+| `R2_PUBLIC_URL` | Public Bucket/CDN URL (e.g. `https://pub-xxx.r2.dev`) |
+| `SMTP_HOST`, `SMTP_USER`, etc. | SMTP Provider credentials (Resend, SendGrid, Mailgun) |
+
+### 3. Deploying
+
+Push your code to your connected GitHub repository branch. Netlify will build and deploy the SvelteKit app automatically using `@sveltejs/adapter-netlify`.
+
 ## Project Structure
 
 ```
 portfolio/
+├── .github/
+│   └── workflows/
+│       └── migrate.yml            # GitHub Actions DB migration workflow
 ├── src/
 │   ├── app.d.ts
-│   ├── hooks.server.ts            # Auth verification, security headers, rate limiting
+│   ├── hooks.server.ts            # Auth verification, CSP headers, rate limiting
 │   ├── lib/
 │   │   ├── components/            # UI components (admin & public)
 │   │   ├── server/
-│   │   │   ├── db/                # Drizzle schema, migrations, seed, CLI admin script
-│   │   │   ├── queue/             # BullMQ queue & email worker definition
-│   │   │   ├── redis/             # Redis client initialization & cache helper functions
+│   │   │   ├── db/                # Drizzle schema, seed, migration runner & CLI admin script
+│   │   │   ├── queue/             # Direct email queue dispatch
+│   │   │   ├── cache/             # Redis client initialization & cache helper functions
+│   │   │   ├── storage/           # Local & Cloudflare R2 Storage providers
 │   │   │   ├── repositories/      # Data access layer (PostgreSQL / Drizzle)
 │   │   │   ├── services/          # Business logic layer & cache operations
 │   │   │   └── container.ts       # Dependency injection container
 │   │   └── validation/            # Zod schemas for input validation
 │   └── routes/                    # SvelteKit routing tree
-│       ├── +page.server.ts        # Public homepage data loader
+│       ├── +page.server.ts        # Public homepage loader & Turnstile contact action
 │       ├── +page.svelte           # Public homepage presentation
 │       ├── admin/                 # Private admin dashboard routes
-│       └── api/                   # Public REST endpoints
-├── static/                        # Static assets & file uploads
+│       └── api/                   # REST endpoints
+├── static/                        # Static assets
 ├── drizzle/                       # Generated SQL migration files
 ├── drizzle.config.ts              # Drizzle ORM configuration
+├── netlify.toml                   # Netlify build configuration
 ├── svelte.config.js               # SvelteKit configuration
 ├── vite.config.ts                 # Vite build configuration
 └── package.json
 ```
 
-## Development
+## Development & Code Quality
 
 Available scripts for development and code quality maintenance:
 
@@ -175,110 +247,16 @@ Available scripts for development and code quality maintenance:
 - `npm run check`: Run `svelte-check` for TypeScript and Svelte diagnostics.
 - `npm run lint`: Run ESLint and Prettier code formatting checks.
 - `npm run format`: Automatically format codebase using Prettier.
+- `npm run db:generate`: Generate SQL migration files from Drizzle schema changes.
+- `npm run db:migrate`: Run pending migrations against the target database.
 - `npm run db:studio`: Launch Drizzle Studio interface to manage database records visually.
 
-## Build & Deployment (VPS)
+## API Endpoints
 
-This section describes deploying the application directly to a Linux Virtual Private Server (VPS) using standard Linux services (Nginx, PM2, systemd, PostgreSQL, Redis) without Docker.
-
-### 1. Prerequisites
-
-Ensure your Linux server (Ubuntu/Debian) has the required software installed:
-
-```bash
-sudo apt update && sudo apt install -y nodejs npm postgresql redis-server nginx pm2
-```
-
-### 2. Environment & Directory Setup
-
-Clone the project to `/var/www/portfolio`, install dependencies, configure `.env`, run migrations, seed data, and create the admin user:
-
-```bash
-cd /var/www/portfolio
-npm install --production=false
-npm run db:push
-npm run seed
-npm run create-admin
-```
-
-### 3. Build Application
-
-Build the production bundle using SvelteKit Node Adapter:
-
-```bash
-npm run build
-```
-
-The output will be generated inside the `build/` directory.
-
-### 4. Process Management (PM2)
-
-Start the application node server using PM2 to manage uptime and restarts:
-
-```bash
-pm2 start build/index.js --name "portfolio-app"
-pm2 save
-pm2 startup
-```
-
-### 5. Nginx Reverse Proxy Configuration
-
-Configure Nginx as a reverse proxy for port `3000` (or your configured application port). Create `/etc/nginx/sites-available/portfolio`:
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com www.your-domain.com;
-
-    client_max_body_size 10M;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Enable the site configuration and reload Nginx:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-### 6. SSL Certificate (Certbot)
-
-Secure your installation with Let's Encrypt SSL:
-
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d your-domain.com -d www.your-domain.com
-```
-
-## API Docs
-
-The system exposes internal server-side endpoints and public API handlers:
-
-- `POST /api/contact`: Accepts public contact form inquiries. Enforces Redis-backed rate limiting and pushes notification jobs to the BullMQ email queue.
+- `POST /?:contact`: Public contact form submission action. Verifies Turnstile token, enforces Redis rate limiting, stores inquiry in PostgreSQL, and sends direct email notifications.
 - `POST /api/admin/auth/login`: Admin authentication endpoint issuing HTTP-only JWT cookies.
 - `POST /api/admin/auth/logout`: Clears authentication cookies and invalidates administrative session.
-
-Further detailed product requirements, architecture notes, database entity relationships, and UI/UX design token specifications are documented in the `.agents/` folder.
-
-## Troubleshooting
-
-- **Database Connection Failure**: Check `DATABASE_URL` credentials and confirm PostgreSQL service is running (`systemctl status postgresql`).
-- **Redis Connection Error**: Ensure Redis server is active on `localhost:6379` (`systemctl status redis`).
-- **Cache Staleness**: Admin mutations automatically clear relevant Redis keys (`content:section_headers`, etc.). Flush Redis manually if needed: `redis-cli flushall`.
-- **Upload Directory Permission Issue**: Verify application process has write permissions to `./static/uploads`.
+- `POST /api/admin/upload`: Secure image upload handler supporting Cloudflare R2 or local storage.
 
 ## License
 
