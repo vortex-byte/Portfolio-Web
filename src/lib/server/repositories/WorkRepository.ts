@@ -133,7 +133,7 @@ export class WorkRepository implements IWorkRepository {
         slug,
         shortDescription: input.shortDescription,
         longDescription: input.longDescription,
-        coverImageUrl: input.coverImageUrl,
+        coverImagePath: input.coverImagePath,
         coverImageAlt: input.coverImageAlt || null,
         projectUrl: input.projectUrl || null,
         repoUrl: input.repoUrl || null,
@@ -154,7 +154,7 @@ export class WorkRepository implements IWorkRepository {
         title: input.title,
         shortDescription: input.shortDescription,
         longDescription: input.longDescription,
-        coverImageUrl: input.coverImageUrl,
+        coverImagePath: input.coverImagePath,
         coverImageAlt: input.coverImageAlt || null,
         projectUrl: input.projectUrl || null,
         repoUrl: input.repoUrl || null,
@@ -171,9 +171,9 @@ export class WorkRepository implements IWorkRepository {
     const work = await this.getById(id);
     if (!work) return [];
 
-    const deletedUrls: string[] = [work.coverImageUrl];
+    const deletedUrls: string[] = [work.coverImagePath];
     for (const img of work.images) {
-      deletedUrls.push(img.imageUrl);
+      deletedUrls.push(img.imagePath);
     }
 
     await db.delete(workItems).where(eq(workItems.id, id));
@@ -273,7 +273,7 @@ export class WorkRepository implements IWorkRepository {
 
   async addGalleryImage(
     workItemId: string,
-    imageUrl: string,
+    imagePath: string,
     imageAlt?: string | null
   ): Promise<WorkImageEntity> {
     const existingImages = await db
@@ -291,7 +291,7 @@ export class WorkRepository implements IWorkRepository {
       .insert(workImages)
       .values({
         workItemId,
-        imageUrl,
+        imagePath,
         imageAlt: imageAlt || null,
         displayOrder: startOrder,
       })
@@ -309,7 +309,7 @@ export class WorkRepository implements IWorkRepository {
     if (imgRes.length === 0) return null;
 
     await db.delete(workImages).where(eq(workImages.id, imageId));
-    return imgRes[0].imageUrl;
+    return imgRes[0].imagePath;
   }
 }
 

@@ -12,7 +12,7 @@
 		ctaSecondaryLabel = 'Contact Me',
 		ctaSecondaryUrl = '/#contact',
 		showPhoto = true,
-		photoUrl = null,
+		photo = null,
 		photoAlt = 'Owner photo',
 		photoZoom = 100
 	}: {
@@ -24,7 +24,7 @@
 		ctaSecondaryLabel?: string | null;
 		ctaSecondaryUrl?: string | null;
 		showPhoto?: boolean;
-		photoUrl?: string | null;
+		photo?: string | null;
 		photoAlt?: string | null;
 		photoZoom?: number | null;
 	} = $props();
@@ -83,9 +83,9 @@
 					<div
 						class="absolute inset-0 flex -rotate-2 items-center justify-center overflow-hidden rounded-[12px] border-[4px] border-black bg-white shadow-[8px_8px_0px_#000000]"
 					>
-						{#if photoUrl}
+						{#if photo}
 							<img
-								src={photoUrl}
+								src={photo}
 								alt={photoAlt || 'Owner photo'}
 								class="h-full w-auto object-contain grayscale"
 								style="transform: scale({(photoZoom ?? 100) / 100});"

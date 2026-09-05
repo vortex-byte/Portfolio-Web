@@ -67,8 +67,8 @@ export class WorkService {
 		const existing = await this.workRepo.getById(input.id);
 		const res = await this.workRepo.updateWork(input);
 
-		if (existing && existing.coverImageUrl !== input.coverImageUrl) {
-			await this.storageProvider.deleteImage(existing.coverImageUrl);
+		if (existing && existing.coverImagePath !== input.coverImagePath) {
+			await this.storageProvider.deleteImage(existing.coverImagePath);
 		}
 
 		await this.cacheService.invalidatePattern('content:work:*');
@@ -105,10 +105,10 @@ export class WorkService {
 
 	async addGalleryImage(
 		workItemId: string,
-		imageUrl: string,
+		imagePath: string,
 		imageAlt?: string | null
 	): Promise<WorkImageEntity> {
-		const res = await this.workRepo.addGalleryImage(workItemId, imageUrl, imageAlt);
+		const res = await this.workRepo.addGalleryImage(workItemId, imagePath, imageAlt);
 		await this.cacheService.invalidatePattern('content:work:*');
 		return res;
 	}

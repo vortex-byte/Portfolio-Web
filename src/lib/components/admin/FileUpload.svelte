@@ -4,7 +4,7 @@
 
 	let {
 		value = $bindable(''),
-		name = 'imageUrl',
+		name = 'imagePath',
 		fileName = $bindable(''),
 		fileNameInputName = '',
 		category = 'work'

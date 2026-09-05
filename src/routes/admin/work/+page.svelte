@@ -171,7 +171,7 @@
 								<TableCell>
 									<div class="h-9 w-14 shrink-0 overflow-hidden rounded border bg-muted">
 										<img
-											src={item.coverImageUrl}
+											src={item.coverImagePath}
 											alt={item.title}
 											class="h-full w-full object-cover"
 										/>

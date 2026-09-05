@@ -32,7 +32,7 @@ export const heroSchema = z.object({
 	ctaSecondaryLabel: nullableString(60),
 	ctaSecondaryUrl: optionalUrl,
 	showPhoto: z.boolean().default(true),
-	photoUrl: nullableString(500),
+	photoPath: nullableString(500),
 	photoAlt: nullableString(200),
 	photoZoom: z.coerce
 		.number()
@@ -106,7 +106,7 @@ export const workItemSchema = z.object({
 	title: nonEmptyTrimmed('Title', 150),
 	shortDescription: nonEmptyTrimmed('Short description', 255),
 	longDescription: z.string().min(1, 'Long description is required'),
-	coverImageUrl: z.string().trim().min(1, 'Cover image is required').max(500),
+	coverImagePath: z.string().trim().min(1, 'Cover image is required').max(500),
 	coverImageAlt: nullableString(200),
 	projectUrl: optionalUrl,
 	repoUrl: optionalUrl,

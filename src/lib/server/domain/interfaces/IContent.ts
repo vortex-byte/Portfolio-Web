@@ -7,7 +7,7 @@ export interface HeroSectionEntity {
 	ctaSecondaryLabel: string | null;
 	ctaSecondaryUrl: string | null;
 	showPhoto: boolean;
-	photoUrl: string | null;
+	photoPath: string | null;
 	photoAlt: string | null;
 	photoZoom: number | null;
 	layoutConfig: unknown;

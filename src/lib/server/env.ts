@@ -39,7 +39,6 @@ const envSchema = z.object({
 	LOGIN_LOCKOUT_WINDOW: z.string().default('15m'),
 	LOGIN_LOCKOUT_DURATION: z.string().default('15m'),
 
-	UPLOAD_DIR: z.string().default('./uploads'),
 	MAX_UPLOAD_SIZE_MB: z.coerce.number().default(5),
 
 	SMTP_HOST: z.string().optional(),
@@ -53,11 +52,11 @@ const envSchema = z.object({
 	PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
 	TURNSTILE_SECRET_KEY: z.string().optional(),
 
-	R2_ACCOUNT_ID: z.string().optional(),
-	R2_ACCESS_KEY_ID: z.string().optional(),
-	R2_SECRET_ACCESS_KEY: z.string().optional(),
-	R2_BUCKET_NAME: z.string().optional(),
-	R2_PUBLIC_URL: z.string().optional()
+	R2_ACCOUNT_ID: z.string().min(1, 'R2_ACCOUNT_ID is required'),
+	R2_ACCESS_KEY_ID: z.string().min(1, 'R2_ACCESS_KEY_ID is required'),
+	R2_SECRET_ACCESS_KEY: z.string().min(1, 'R2_SECRET_ACCESS_KEY is required'),
+	R2_BUCKET_NAME: z.string().min(1, 'R2_BUCKET_NAME is required'),
+	R2_PUBLIC_URL: z.string().min(1, 'R2_PUBLIC_URL is required')
 });
 
 export function getEnv() {

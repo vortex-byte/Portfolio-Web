@@ -63,7 +63,7 @@ export const actions: Actions = {
 		try {
 			const ip = getClientAddress();
 
-			if (env.TURNSTILE_SECRET_KEY) {
+			if (env.NODE_ENV === 'production' && env.TURNSTILE_SECRET_KEY) {
 				const turnstileToken = formData.get('cf-turnstile-response')?.toString();
 				if (!turnstileToken) {
 					return fail(400, {

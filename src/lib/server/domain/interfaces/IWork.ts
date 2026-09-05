@@ -4,7 +4,7 @@ export interface WorkItemEntity {
 	title: string;
 	shortDescription: string;
 	longDescription: string;
-	coverImageUrl: string;
+	coverImagePath: string;
 	coverImageAlt: string | null;
 	projectUrl: string | null;
 	repoUrl: string | null;
@@ -20,7 +20,7 @@ export interface WorkItemEntity {
 export interface WorkImageEntity {
 	id: string;
 	workItemId: string;
-	imageUrl: string;
+	imagePath: string;
 	imageAlt: string | null;
 	displayOrder: number;
 	createdAt: Date;

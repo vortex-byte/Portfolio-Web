@@ -1,4 +1,4 @@
-import { workService, localStorageProvider } from "$lib/server/container";
+import { workService, storageProvider } from "$lib/server/container";
 import { sanitizeHtml, sanitizePlain } from "$lib/server/security/sanitizer";
 import { workItemSchema } from "$lib/validation/adminSchemas";
 import { error, fail, redirect } from "@sveltejs/kit";
@@ -29,7 +29,7 @@ export const actions: Actions = {
       title: formData.get("title")?.toString() ?? "",
       shortDescription: formData.get("shortDescription")?.toString() ?? "",
       longDescription: formData.get("longDescription")?.toString() ?? "",
-      coverImageUrl: formData.get("coverImageUrl")?.toString() ?? "",
+      coverImagePath: formData.get("coverImagePath")?.toString() ?? "",
       coverImageAlt,
       projectUrl: formData.get("projectUrl")?.toString() || null,
       repoUrl: formData.get("repoUrl")?.toString() || null,
@@ -60,7 +60,7 @@ export const actions: Actions = {
       title: sanitizePlain(data.title),
       shortDescription: cleanShortDescription,
       longDescription: cleanLongDescription,
-      coverImageUrl: data.coverImageUrl,
+      coverImagePath: data.coverImagePath,
       coverImageAlt: data.coverImageAlt,
       projectUrl: data.projectUrl,
       repoUrl: data.repoUrl,
@@ -71,7 +71,7 @@ export const actions: Actions = {
       for (let i = 0; i < galleryFiles.length; i++) {
         const file = galleryFiles[i];
         try {
-          const { url } = await localStorageProvider.saveImage(
+          const { url } = await storageProvider.saveImage(
             file,
             "work-gallery"
           );
@@ -95,7 +95,7 @@ export const actions: Actions = {
     }
 
     try {
-      const { url } = await localStorageProvider.saveImage(
+      const { url } = await storageProvider.saveImage(
         file,
         "work-gallery"
       );

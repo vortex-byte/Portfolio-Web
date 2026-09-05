@@ -47,7 +47,7 @@ export class ContentRepository implements IContentRepository {
 				ctaSecondaryLabel: input.ctaSecondaryLabel,
 				ctaSecondaryUrl: input.ctaSecondaryUrl,
 				showPhoto,
-				photoUrl: input.photoUrl,
+				photoPath: input.photoPath,
 				photoAlt: input.photoAlt,
 				photoZoom: input.photoZoom ?? 100,
 				updatedAt: new Date()
@@ -62,7 +62,7 @@ export class ContentRepository implements IContentRepository {
 					ctaSecondaryLabel: input.ctaSecondaryLabel,
 					ctaSecondaryUrl: input.ctaSecondaryUrl,
 					showPhoto,
-					photoUrl: input.photoUrl,
+					photoPath: input.photoPath,
 					photoAlt: input.photoAlt,
 					photoZoom: input.photoZoom ?? 100,
 					updatedAt: new Date()

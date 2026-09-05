@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Icon from './Icon.svelte';
 
-	interface CarouselImage {
+	export interface CarouselImage {
 		id?: string;
-		imageUrl: string;
+		image: string;
 		imageAlt?: string | null;
 	}
 
@@ -75,7 +75,7 @@
 			class="group relative flex aspect-video cursor-pointer items-center justify-center overflow-hidden rounded-[6px] border-[3px] border-black bg-black shadow-[6px_6px_0px_#000000]"
 		>
 			<img
-				src={images[currentIndex].imageUrl}
+				src={images[currentIndex].image}
 				alt={images[currentIndex].imageAlt || `Gallery image ${currentIndex + 1}`}
 				class="h-full w-full object-cover transition-all duration-200 group-hover:scale-102"
 			/>
@@ -134,7 +134,7 @@
 							: 'border-neutral-400 opacity-60 hover:opacity-100'}"
 					>
 						<img
-							src={img.imageUrl}
+							src={img.image}
 							alt={img.imageAlt || `Thumbnail ${idx + 1}`}
 							class="h-full w-full object-cover"
 						/>
@@ -177,7 +177,7 @@
 					class="relative flex min-h-[300px] flex-1 items-center justify-center bg-neutral-900 p-4"
 				>
 					<img
-						src={images[currentIndex].imageUrl}
+						src={images[currentIndex].image}
 						alt={images[currentIndex].imageAlt || `Enlarged view ${currentIndex + 1}`}
 						class="max-h-[70vh] w-auto max-w-full rounded border-2 border-black object-contain shadow-[4px_4px_0px_#000000]"
 					/>

@@ -18,7 +18,7 @@
 	let sectionHeader = $derived(data.sectionHeader);
 
 	let loading = $state(false);
-	let photoUrl = $derived(hero?.photoUrl ?? '');
+	let photoPath = $derived(hero?.photoPath ?? '');
 	let photoZoom = $state(100);
 
 	$effect(() => {
@@ -189,7 +189,7 @@
 						</div>
 					</div>
 
-					<FileUpload bind:value={photoUrl} name="photoUrl" category="hero" />
+					<FileUpload bind:value={photoPath} name="photoPath" category="hero" />
 
 					<div class="space-y-2">
 						<Label for="photoAlt">Photo Alt Text (Accessibility)</Label>
@@ -214,14 +214,14 @@
 					</div>
 
 					<!-- Image Preview with B&W + Zoom applied -->
-					{#if photoUrl}
+					{#if photoPath}
 						<div class="space-y-2">
 							<Label>Live Preview</Label>
 							<div
 								class="relative flex aspect-square w-48 items-center justify-center overflow-hidden rounded-md border bg-muted"
 							>
 								<img
-									src={photoUrl}
+									src={photoPath}
 									alt="Preview"
 									class="h-full w-auto object-contain grayscale transition-transform duration-100"
 									style="transform: scale({photoZoom / 100});"

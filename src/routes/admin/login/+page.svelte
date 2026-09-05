@@ -13,6 +13,8 @@
 		CardContent
 	} from '$lib/components/ui/card';
 	import { enhance } from '$app/forms';
+	import { env as publicEnv } from '$env/dynamic/public';
+	import { dev } from '$app/environment';
 
 	let { form }: { form: ActionData } = $props();
 
@@ -26,6 +28,12 @@
 		}
 	});
 </script>
+
+<svelte:head>
+	{#if !dev && publicEnv.PUBLIC_TURNSTILE_SITE_KEY}
+		<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+	{/if}
+</svelte:head>
 
 <AdminTitle title="Admin Login" />
 
@@ -53,6 +61,9 @@
 				return async ({ update }) => {
 					loading = false;
 					await update();
+					if (typeof window !== 'undefined' && (window as any).turnstile) {
+						(window as any).turnstile.reset();
+					}
 				};
 			}}
 			class="space-y-5"
@@ -80,6 +91,10 @@
 					bind:value={password}
 				/>
 			</div>
+
+			{#if !dev && publicEnv.PUBLIC_TURNSTILE_SITE_KEY}
+				<div class="cf-turnstile flex justify-center" data-sitekey={publicEnv.PUBLIC_TURNSTILE_SITE_KEY} data-theme="light"></div>
+			{/if}
 
 			<Button type="submit" disabled={loading} class="h-11 w-full cursor-pointer font-bold">
 				{#if loading}

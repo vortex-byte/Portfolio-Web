@@ -4,11 +4,22 @@
 	import Badge from '$lib/components/public/Badge.svelte';
 	import Button from '$lib/components/public/Button.svelte';
 	import Icon from '$lib/components/public/Icon.svelte';
+	import type { WorkItem } from '$lib/components/public/sections/Work.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
-	let items = $derived(data.workData.items);
+	let items = $derived.by(() => {
+		return data.workData.items.map((item) => ({
+			id: item.id,
+			slug: item.slug,
+			title: item.title,
+			shortDescription: item.shortDescription,
+			coverImage: item.coverImagePath,
+			coverImageAlt: item.coverImageAlt,
+			techStack: item.techStack
+		})) satisfies WorkItem[];
+	});
 	let page = $derived(data.workData.page);
 	let totalPages = $derived(data.workData.totalPages);
 </script>
@@ -52,7 +63,7 @@
 							class="aspect-video shrink-0 overflow-hidden rounded-[6px] border-[3px] border-black bg-neutral-100 shadow-[3px_3px_0px_#000000]"
 						>
 							<img
-								src={work.coverImageUrl}
+								src={work.coverImage}
 								alt={work.coverImageAlt || work.title}
 								class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 								loading="lazy"

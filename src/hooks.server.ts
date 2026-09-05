@@ -108,8 +108,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	if (
 		url.pathname.startsWith('/api/admin') &&
-		!url.pathname.startsWith('/api/admin/auth') &&
-		!url.pathname.startsWith('/uploads/')
+		!url.pathname.startsWith('/api/admin/auth')
 	) {
 		if (!event.locals.user) {
 			throw error(401, 'Unauthorized');

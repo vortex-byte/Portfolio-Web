@@ -4,12 +4,12 @@
 	import Button from '../Button.svelte';
 	import Icon from '../Icon.svelte';
 
-	interface WorkItem {
+	export interface WorkItem {
 		id: string;
 		slug: string;
 		title: string;
 		shortDescription: string;
-		coverImageUrl: string;
+		coverImage: string;
 		coverImageAlt?: string | null;
 		techStack?: string[] | null;
 	}
@@ -64,7 +64,7 @@
 								class="aspect-video shrink-0 overflow-hidden rounded-[6px] border-[3px] border-black bg-neutral-100 shadow-[3px_3px_0px_#000000]"
 							>
 								<img
-									src={work.coverImageUrl}
+									src={work.coverImage}
 									alt={work.coverImageAlt || work.title}
 									class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 									loading="lazy"

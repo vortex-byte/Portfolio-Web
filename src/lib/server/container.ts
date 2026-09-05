@@ -7,9 +7,7 @@ import { contactRepository } from '$lib/server/repositories/ContactRepository';
 import { smtpRepository } from '$lib/server/repositories/SmtpRepository';
 
 import { cacheService } from '$lib/server/cache/CacheService';
-import { localStorageProvider } from '$lib/server/storage/LocalStorageProvider';
 import { R2StorageProvider } from '$lib/server/storage/R2StorageProvider';
-import { env } from '$lib/server/env';
 import { argon2PasswordHasher } from '$lib/server/security/Argon2PasswordHasher';
 import { nodemailerProvider } from '$lib/server/mailer/NodemailerProvider';
 import { directEmailQueue } from '$lib/server/queue/DirectEmailQueue';
@@ -20,10 +18,7 @@ import { WorkService } from '$lib/server/services/WorkService';
 import { AnalyticsService } from '$lib/server/services/AnalyticsService';
 import { ContactService } from '$lib/server/services/ContactService';
 
-export const storageProvider =
-	env.R2_ACCOUNT_ID && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_BUCKET_NAME
-		? new R2StorageProvider()
-		: localStorageProvider;
+export const storageProvider = new R2StorageProvider();
 
 export {
 	adminUserRepository,
@@ -35,7 +30,7 @@ export {
 	smtpRepository
 };
 
-export { cacheService, localStorageProvider, argon2PasswordHasher, nodemailerProvider, directEmailQueue as emailQueue };
+export { cacheService, argon2PasswordHasher, nodemailerProvider, directEmailQueue as emailQueue };
 
 export const authService = new AuthService(
 	adminUserRepository,

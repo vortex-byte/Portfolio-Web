@@ -60,7 +60,7 @@ export const heroSection = pgTable(
 		ctaSecondaryLabel: varchar('cta_secondary_label', { length: 60 }),
 		ctaSecondaryUrl: varchar('cta_secondary_url', { length: 255 }),
 		showPhoto: boolean('show_photo').notNull().default(true),
-		photoUrl: varchar('photo_url', { length: 500 }),
+		photoPath: varchar('photo_path', { length: 500 }),
 		photoAlt: varchar('photo_alt', { length: 200 }),
 		photoZoom: integer('photo_zoom').default(100),
 		layoutConfig: jsonb('layout_config'),
@@ -167,7 +167,7 @@ export const workItems = pgTable(
 		title: varchar('title', { length: 150 }).notNull(),
 		shortDescription: varchar('short_description', { length: 255 }).notNull(),
 		longDescription: text('long_description').notNull(),
-		coverImageUrl: varchar('cover_image_url', { length: 500 }).notNull(),
+		coverImagePath: varchar('cover_image_path', { length: 500 }).notNull(),
 		coverImageAlt: varchar('cover_image_alt', { length: 200 }),
 		projectUrl: varchar('project_url', { length: 255 }),
 		repoUrl: varchar('repo_url', { length: 255 }),
@@ -192,7 +192,7 @@ export const workImages = pgTable(
 		workItemId: uuid('work_item_id')
 			.notNull()
 			.references(() => workItems.id, { onDelete: 'cascade' }),
-		imageUrl: varchar('image_url', { length: 500 }).notNull(),
+		imagePath: varchar('image_path', { length: 500 }).notNull(),
 		imageAlt: varchar('image_alt', { length: 200 }),
 		displayOrder: integer('display_order').notNull().default(0),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()

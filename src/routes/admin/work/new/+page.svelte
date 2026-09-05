@@ -17,7 +17,7 @@
 
 	let loading = $state(false);
 	let longDescription = $state('');
-	let coverImageUrl = $state('');
+	let coverImagePath = $state('');
 	let coverFileName = $state('');
 	let techStack = $state<string[]>([]);
 
@@ -144,9 +144,9 @@
 				<div class="space-y-2">
 					<Label>Cover Thumbnail Image *</Label>
 					<FileUpload
-						bind:value={coverImageUrl}
+						bind:value={coverImagePath}
 						bind:fileName={coverFileName}
-						name="coverImageUrl"
+						name="coverImagePath"
 						fileNameInputName="coverFileName"
 						category="work"
 					/>

@@ -6,7 +6,8 @@
 	import Alert from '../Alert.svelte';
 	import Icon from '../Icon.svelte';
 	import { enhance } from '$app/forms';
-	import { env } from '$env/dynamic/public';
+	import { env as publicEnv } from '$env/dynamic/public';
+	import { dev } from '$app/environment';
 
 	let {
 		eyebrow = "Let's Talk",
@@ -40,7 +41,7 @@
 </script>
 
 <svelte:head>
-	{#if env.PUBLIC_TURNSTILE_SITE_KEY}
+	{#if !dev && publicEnv.PUBLIC_TURNSTILE_SITE_KEY}
 		<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 	{/if}
 </svelte:head>
@@ -157,8 +158,8 @@
 							/>
 						</div>
 
-						{#if env.PUBLIC_TURNSTILE_SITE_KEY}
-							<div class="cf-turnstile" data-sitekey={env.PUBLIC_TURNSTILE_SITE_KEY} data-theme="light"></div>
+						{#if !dev && publicEnv.PUBLIC_TURNSTILE_SITE_KEY}
+							<div class="cf-turnstile" data-sitekey={publicEnv.PUBLIC_TURNSTILE_SITE_KEY} data-theme="light"></div>
 						{/if}
 
 						<Button

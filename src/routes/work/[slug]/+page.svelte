@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { env } from '$env/dynamic/public';
-	import Carousel from '$lib/components/public/Carousel.svelte';
+	import Carousel, { type CarouselImage } from '$lib/components/public/Carousel.svelte';
 	import Card from '$lib/components/public/Card.svelte';
 	import Badge from '$lib/components/public/Badge.svelte';
 	import Button from '$lib/components/public/Button.svelte';
@@ -12,12 +12,12 @@
 	let work = $derived(data.work);
 
 	let carouselImages = $derived.by(() => {
-		const list: { id?: string; imageUrl: string; imageAlt?: string | null }[] = [
-			{ imageUrl: work.coverImageUrl, imageAlt: work.coverImageAlt || work.title }
+		const list: CarouselImage[] = [
+			{ image: work.coverImagePath, imageAlt: work.coverImageAlt || work.title }
 		];
 		if (work.images && work.images.length > 0) {
 			for (const img of work.images) {
-				list.push({ id: img.id, imageUrl: img.imageUrl, imageAlt: img.imageAlt });
+				list.push({ id: img.id, image: img.imagePath, imageAlt: img.imageAlt });
 			}
 		}
 		return list;

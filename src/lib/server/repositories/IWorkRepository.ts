@@ -9,7 +9,7 @@ export interface CreateWorkInput {
 	title: string;
 	shortDescription: string;
 	longDescription: string;
-	coverImageUrl: string;
+	coverImagePath: string;
 	coverImageAlt?: string | null;
 	projectUrl?: string | null;
 	repoUrl?: string | null;
@@ -36,7 +36,7 @@ export interface IWorkRepository {
 	reorderWork(id: string, direction: 'up' | 'down'): Promise<void>;
 	addGalleryImage(
 		workItemId: string,
-		imageUrl: string,
+		imagePath: string,
 		imageAlt?: string | null
 	): Promise<WorkImageEntity>;
 	deleteGalleryImage(imageId: string): Promise<string | null>;

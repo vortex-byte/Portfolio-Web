@@ -41,7 +41,7 @@ export const actions: Actions = {
 			ctaSecondaryLabel: formData.get('ctaSecondaryLabel')?.toString() || null,
 			ctaSecondaryUrl: formData.get('ctaSecondaryUrl')?.toString() || null,
 			showPhoto: formData.get('showPhoto') === 'true' || formData.get('showPhoto') === 'on',
-			photoUrl: formData.get('photoUrl')?.toString() || null,
+			photoPath: formData.get('photoPath')?.toString() || null,
 			photoAlt: formData.get('photoAlt')?.toString() || null,
 			photoZoom: formData.get('photoZoom') ? Number(formData.get('photoZoom')) : 100
 		};

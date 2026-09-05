@@ -1,18 +1,19 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
+	import { env as publicEnv } from '$env/dynamic/public';
 	import Hero from '$lib/components/public/sections/Hero.svelte';
 	import About from '$lib/components/public/sections/About.svelte';
 	import Services from '$lib/components/public/sections/Services.svelte';
 	import Skills from '$lib/components/public/sections/Skills.svelte';
 	import WorkSection from '$lib/components/public/sections/Work.svelte';
 	import ContactFormSection from '$lib/components/public/sections/ContactForm.svelte';
+	import type { WorkItem } from '$lib/components/public/sections/Work.svelte';
 	import type { PageData, ActionData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 </script>
 
 <svelte:head>
-	<title>Full-Stack, Backend, IoT Developer | {env.PUBLIC_SITE_TITLE || 'BuildWithZimam'}</title>
+	<title>Full-Stack, Backend, IoT Developer | {publicEnv.PUBLIC_SITE_TITLE || 'BuildWithZimam'}</title>
 </svelte:head>
 
 <!-- Hero Section -->
@@ -26,7 +27,7 @@
 		ctaSecondaryLabel={data.hero?.ctaSecondaryLabel}
 		ctaSecondaryUrl={data.hero?.ctaSecondaryUrl}
 		showPhoto={data.hero?.showPhoto}
-		photoUrl={data.hero?.photoUrl}
+		photo={data.hero?.photoPath}
 		photoAlt={data.hero?.photoAlt}
 		photoZoom={data.hero?.photoZoom}
 	/>
@@ -46,12 +47,7 @@
 	<Services
 		eyebrow={data.sectionHeaders?.services?.eyebrow}
 		title={data.sectionHeaders?.services?.title}
-		items={data.services as unknown as {
-			id: string;
-			title: string;
-			description: string;
-			icon?: string | null;
-		}[]}
+		items={data.services}
 	/>
 {/if}
 
@@ -60,13 +56,7 @@
 	<Skills
 		eyebrow={data.sectionHeaders?.skills?.eyebrow}
 		title={data.sectionHeaders?.skills?.title}
-		items={data.skills as unknown as {
-			id: string;
-			name: string;
-			icon?: string | null;
-			category?: string | null;
-			proficiency?: number | null;
-		}[]}
+		items={data.skills}
 	/>
 {/if}
 
@@ -75,15 +65,15 @@
 	<WorkSection
 		eyebrow={data.sectionHeaders?.work?.eyebrow}
 		title={data.sectionHeaders?.work?.title}
-		items={data.pinnedWork as unknown as {
-			id: string;
-			slug: string;
-			title: string;
-			shortDescription: string;
-			coverImageUrl: string;
-			coverImageAlt?: string | null;
-			techStack?: string[] | null;
-		}[]}
+		items={data.pinnedWork.map((item) => ({
+			id: item.id,
+			slug: item.slug,
+			title: item.title,
+			shortDescription: item.shortDescription,
+			coverImage: item.coverImagePath,
+			coverImageAlt: item.coverImageAlt,
+			techStack: item.techStack
+		})) satisfies WorkItem[]}
 	/>
 {/if}
 

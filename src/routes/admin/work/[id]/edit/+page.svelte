@@ -21,7 +21,7 @@
 
 	let loading = $state(false);
 	let longDescription = $state('');
-	let coverImageUrl = $state('');
+	let coverImagePath = $state('');
 	let coverFileName = $state('');
 	let techStack = $state<string[]>([]);
 	let confirmOpen = $state(false);
@@ -81,7 +81,7 @@
 
 	$effect(() => {
 		longDescription = work.longDescription ?? '';
-		coverImageUrl = work.coverImageUrl ?? '';
+		coverImagePath = work.coverImagePath ?? '';
 		techStack = work.techStack || [];
 	});
 
@@ -169,9 +169,9 @@
 				<div class="space-y-2">
 					<Label>Cover Thumbnail Image *</Label>
 					<FileUpload
-						bind:value={coverImageUrl}
+						bind:value={coverImagePath}
 						bind:fileName={coverFileName}
-						name="coverImageUrl"
+						name="coverImagePath"
 						fileNameInputName="coverFileName"
 						category="work"
 					/>
@@ -190,7 +190,7 @@
 										class="group relative aspect-video overflow-hidden rounded-lg border bg-card"
 									>
 										<img
-											src={img.imageUrl}
+											src={img.imagePath}
 											alt={img.imageAlt || 'Gallery screenshot'}
 											class="h-full w-full object-cover"
 										/>
